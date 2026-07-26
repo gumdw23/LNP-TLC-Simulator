@@ -198,6 +198,47 @@ EXPERIMENT_COLUMNS = [
 ]
 
 
+
+# ============================================================
+# IPYTHON / COLAB DILL COMPATIBILITY SHIM
+#
+# core_runtime_bundle.dill was created in a Colab/IPython
+# environment. Some serialized references point to
+# IPython.core.display, while newer IPython versions expose
+# them through IPython.display.
+# ============================================================
+
+try:
+    import IPython.display as _ip_display
+    import IPython.core.display as _ip_core_display
+
+    for _ip_name in dir(_ip_display):
+
+        if _ip_name.startswith("_"):
+            continue
+
+        if not hasattr(
+            _ip_core_display,
+            _ip_name
+        ):
+
+            try:
+                setattr(
+                    _ip_core_display,
+                    _ip_name,
+                    getattr(
+                        _ip_display,
+                        _ip_name
+                    )
+                )
+
+            except Exception:
+                pass
+
+except Exception:
+    pass
+
+
 # ============================================================
 # ENGINE LOADING
 # ============================================================
