@@ -1,0 +1,10 @@
+streamlit>=1.40,<2.0
+pandas==2.2.2
+numpy==2.0.2
+scikit-learn==1.6.1
+matplotlib==3.10.0
+joblib==1.5.3
+dill==0.3.8
+rdkit==2026.3.4
+Pillow==11.3.0
+gradio==6.20.0

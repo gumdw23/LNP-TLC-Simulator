@@ -1,0 +1,60 @@
+{
+  "project": "LNP TLC Simulator",
+  "checkpoint_version": "STEP_24_12",
+  "created_at": "2026-07-26T11:29:17.879417",
+  "python_version": "3.12.13 (main, Mar  4 2026, 09:23:07) [GCC 11.4.0]",
+  "global_model": {
+    "active": true,
+    "frozen_test_MAE": 0.0644,
+    "frozen_test_RMSE": 0.1006,
+    "frozen_test_R2": 0.9054
+  },
+  "lnp_correction": {
+    "active": false,
+    "validated_on_unseen_lipids": false
+  },
+  "tailing_model": {
+    "active": false,
+    "validated_on_unseen_lipids": false
+  },
+  "warnings": [
+    "Global model is primarily a public small-molecule TLC model.",
+    "HIGH OOD LNP predictions remain exploratory.",
+    "An active LNP correction model still requires unseen-lipid validation.",
+    "An active tailing model still requires unseen-lipid validation."
+  ],
+  "saved_models": [
+    "global_rf_model.pkl"
+  ],
+  "saved_configs": [
+    "SOLVENT_FEATURES",
+    "ALL_MODEL_FEATURES",
+    "LNP_CORRECTION_FEATURES",
+    "CORRECTION_FEATURE_CANDIDATES",
+    "TAILING_MODEL_FEATURES",
+    "GLOBAL_MODEL_SOLVENTS",
+    "UI_SOLVENTS",
+    "VALID_TAILING",
+    "VALID_SPOT_QUALITY"
+  ],
+  "saved_data": [
+    {
+      "variable": "web_experiment_db",
+      "file": "web_experiment_db.csv",
+      "rows": 0,
+      "columns": 23
+    },
+    {
+      "variable": "train_df",
+      "file": "global_train_df.csv",
+      "rows": 3911,
+      "columns": 224
+    },
+    {
+      "variable": "test_df",
+      "file": "global_test_df.csv",
+      "rows": 519,
+      "columns": 223
+    }
+  ]
+}

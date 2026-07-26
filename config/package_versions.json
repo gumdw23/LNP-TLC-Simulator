@@ -1,0 +1,10 @@
+{
+  "rdkit": "2026.03.4",
+  "pandas": "2.2.2",
+  "numpy": "2.0.2",
+  "scikit-learn": "1.6.1",
+  "gradio": "6.20.0",
+  "matplotlib": "3.10.0",
+  "joblib": "1.5.3",
+  "dill": "0.3.8"
+}

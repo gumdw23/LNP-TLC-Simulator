@@ -1,0 +1,147 @@
+[
+  {
+    "file": ".gitignore",
+    "size_bytes": 355,
+    "sha256": "369d619f2b36ed1551209fafe6bf6cd4bad184cc8f405e309ebb953083d993f1"
+  },
+  {
+    "file": ".streamlit/config.toml",
+    "size_bytes": 117,
+    "sha256": "a2624d27dbb9f5e9e37b4f2673ed96223eb178dbb4c166956e416e8000588c8a"
+  },
+  {
+    "file": "PYTHON_VERSION.txt",
+    "size_bytes": 5,
+    "sha256": "7b55f8e67b5623c4bef3fa691288da9437d79d3aba156de48d481db32ac7d16d"
+  },
+  {
+    "file": "README.md",
+    "size_bytes": 772,
+    "sha256": "da114cd3533fb28f74ebc2d502cc422a6f9612fec9bd2fb2909ff580a20b19b3"
+  },
+  {
+    "file": "__pycache__/app.cpython-312.pyc",
+    "size_bytes": 61535,
+    "sha256": "c09d6bd3f6db0b4485194944843063fca0cd8948cfd6259c8a4efe07be7730b9"
+  },
+  {
+    "file": "app.py",
+    "size_bytes": 74234,
+    "sha256": "ba64d74719e22d6aba2b253d69d8da416207f651a792652bc15f0a0d0e7561ad"
+  },
+  {
+    "file": "checkpoint/core_runtime_bundle.dill",
+    "size_bytes": 163771558,
+    "sha256": "c006e0c932318c89c4166ccb003f7a4e7477cc9decfd95987ae08b5720896692"
+  },
+  {
+    "file": "config/ALL_MODEL_FEATURES.pkl",
+    "size_bytes": 2620,
+    "sha256": "c6f7b11f875dbf128a0b04e83f587c98fe53bb8e5396f97b7603be675dd8fa0c"
+  },
+  {
+    "file": "config/CORRECTION_FEATURE_CANDIDATES.pkl",
+    "size_bytes": 1108,
+    "sha256": "b2cd12464ce63f6219eace5205a4430b8166da0e07f4606e2df3694cada6cdec"
+  },
+  {
+    "file": "config/GLOBAL_MODEL_SOLVENTS.pkl",
+    "size_bytes": 53,
+    "sha256": "ee7bc45641538787adbfac054a511209fd671ff47253ce457cff1543ff5e84d4"
+  },
+  {
+    "file": "config/LNP_CORRECTION_FEATURES.pkl",
+    "size_bytes": 750,
+    "sha256": "c3a40ffc5e7108a2166cfc63c4b846b199afa47da421f95ff26757cbd7c8780e"
+  },
+  {
+    "file": "config/SOLVENT_FEATURES.pkl",
+    "size_bytes": 309,
+    "sha256": "1752297ebb59e98e7ace9a315bbceb3c2ae57c4c89e6ab107a5bff2567712b3e"
+  },
+  {
+    "file": "config/TAILING_MODEL_FEATURES.pkl",
+    "size_bytes": 1039,
+    "sha256": "9d34272d4bee6db0a0f75468b6150eb79f696741eecf7146c02490eeae951fc1"
+  },
+  {
+    "file": "config/UI_SOLVENTS.pkl",
+    "size_bytes": 129,
+    "sha256": "749805fce34efb44e07ea4d3f35dc6dc57ade1a65c36f0d483430e43e078e9d3"
+  },
+  {
+    "file": "config/VALID_SPOT_QUALITY.pkl",
+    "size_bytes": 71,
+    "sha256": "77d1ab74a0b8f4d0ee21ecceae4a79b35a7c5375fa8571149d95308089b21a7d"
+  },
+  {
+    "file": "config/VALID_TAILING.pkl",
+    "size_bytes": 48,
+    "sha256": "3a276c2abce78c4b3d5dd9ea85588f7821ef2c3f0de8f2652e2e4c01a853c9fe"
+  },
+  {
+    "file": "config/deployment_environment.json",
+    "size_bytes": 397,
+    "sha256": "2afb580bab4b3a0a78790ae0ff5dac9dbc2ebeed5dd5d4564cbf822cd91e3a88"
+  },
+  {
+    "file": "config/package_versions.json",
+    "size_bytes": 182,
+    "sha256": "56f84fe47b379ed7208fce6fe580eeeb562bf84fa1ce3fb26616bb57280ad681"
+  },
+  {
+    "file": "config/project_metadata.json",
+    "size_bytes": 1503,
+    "sha256": "632e2cf7d64cc1bc549ff814e485c835023af85fd94742e4d8c7d5cdf1124614"
+  },
+  {
+    "file": "data/reference/additive_db.csv",
+    "size_bytes": 367,
+    "sha256": "7a63c3970d884e8c62695843126d4f8902c23687ff1df1d37d9d19345a085070"
+  },
+  {
+    "file": "data/reference/global_test_df.csv",
+    "size_bytes": 348808,
+    "sha256": "ad901c8760e606cf4c283173728e27c022f6364c28faa855ef1f9fdad2257043"
+  },
+  {
+    "file": "data/reference/global_train_df.csv",
+    "size_bytes": 2693880,
+    "sha256": "a766738ac0da3d71773a10945f69b4602afe3c4774d847dff0da727d017ab838"
+  },
+  {
+    "file": "data/reference/solvent_db.csv",
+    "size_bytes": 792,
+    "sha256": "8f05fdf0d8dee959ccae47d573c69468fdacfced64c2ab1f56d3e140adb17d14"
+  },
+  {
+    "file": "data/templates/empty_experiment_db.csv",
+    "size_bytes": 297,
+    "sha256": "3b848b2ce43ee7084790a37ddb3084286e884865fb30f0bd2d898ab1219385b2"
+  },
+  {
+    "file": "deployment_manifest.json",
+    "size_bytes": 4775,
+    "sha256": "74584c7317b40c12ce5b53cd43088b75f71b7c1a6bf3b56f46d73b856aa401a2"
+  },
+  {
+    "file": "models/global_rf_model.pkl",
+    "size_bytes": 155990081,
+    "sha256": "2f11f5cc30a15a159dd9320a851672be3dcdb1ce573d8d51d811617cd92df6e6"
+  },
+  {
+    "file": "requirements.txt",
+    "size_bytes": 159,
+    "sha256": "5eb59dda532b5b6029eacdc8eb864dcff6364723b8e6ec58019579982fe07241"
+  },
+  {
+    "file": "runtime_data/.gitkeep",
+    "size_bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "runtime_models/.gitkeep",
+    "size_bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]

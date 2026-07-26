@@ -1,0 +1,1 @@
+ExperimentID,Date,CompoundName,SMILES,Solvent1,Solvent1Percent,Solvent2,Solvent2Percent,Solvent3,Solvent3Percent,Additive,AdditivePercent,Plate,SampleConcentration_mg_mL,SpottingVolume_uL,DevelopmentDistance_cm,ChamberSaturated,DetectionMethod,Experimental_Rf,Tailing,SpotQuality,Notes,DataOrigin
