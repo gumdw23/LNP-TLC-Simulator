@@ -28,6 +28,16 @@ from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import Ridge, LogisticRegression
+from sklearn.metrics import (
+    r2_score,
+    mean_squared_error,
+    mean_absolute_error,
+    accuracy_score,
+    balanced_accuracy_score,
+    f1_score,
+)
+
+from validation import group_holdout_split as _group_holdout_split
 
 
 # ============================================================
@@ -1146,6 +1156,24 @@ def prepare_tailing_dataset():
 #
 # Streamlit 서버의 /content 경로에 의존하지 않는다.
 # ============================================================
+#
+# 검증(validation) 정책
+# ----------------------
+# 이전 버전은 train/test 분리 없이 전체 데이터로 fit()만 하고
+# "ACTIVE BUT UNVALIDATED"라는 문구만 영원히 띄웠다 — 재학습을 몇 번을
+# 하든 실제로 얼마나 잘 맞는지 알 방법이 코드 안에 전혀 없었다.
+#
+# 여기서는 같은 지질(lipid, InputSMILES 기준)의 행이 학습 세트와 검증
+# 세트에 동시에 들어가지 않도록 그룹 단위로 나눈다 — 무작위로 행 단위로만
+# 나누면 같은 지질의 다른 스팟이 양쪽에 섞여 실제보다 훨씬 좋아 보이는
+# 성능(leakage)이 나올 수 있기 때문이다. "unseen lipid validation"이라는
+# 문구가 이미 이 프로젝트 화면에 있었으니, 이번 수정은 그 문구를 실제로
+# 지키는 코드를 추가한 것이다.
+#
+# 검증에 쓴 분리는 성능을 "재는" 용도로만 쓰고, 실제 배포하는 모델은
+# 이후 전체 데이터로 다시 학습한다(표준적인 방식) — 검증 세트만큼 데이터를
+# 버리고 배포할 이유가 없다.
+
 
 def train_correction_model_app():
 
@@ -1268,27 +1296,38 @@ def train_correction_model_app():
     ]
 
 
-    model = Pipeline([
+    groups = data.loc[X.index, "InputSMILES"]
 
-        (
-            "imputer",
-            SimpleImputer(
-                strategy="median"
-            )
-        ),
 
-        (
-            "scaler",
-            StandardScaler()
-        ),
+    def _make_pipeline():
+        return Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            ("ridge", Ridge(alpha=1.0)),
+        ])
 
-        (
-            "ridge",
-            Ridge(
-                alpha=1.0
-            )
-        ),
-    ])
+
+    # held-out 지질(lipid)로 정직하게 성능을 재고, 배포 모델은 따로
+    # 전체 데이터로 다시 학습한다 (아래 "held-out 검증" 절 참고).
+    train_idx, test_idx, split_warning = _group_holdout_split(
+        len(X), groups.to_numpy(), min_test_groups=1
+    )
+
+    metrics = None
+    if len(test_idx) > 0:
+        eval_model = _make_pipeline()
+        eval_model.fit(X.iloc[train_idx], y.iloc[train_idx])
+        y_pred = eval_model.predict(X.iloc[test_idx])
+        metrics = {
+            "r2": r2_score(y.iloc[test_idx], y_pred),
+            "rmse": mean_squared_error(y.iloc[test_idx], y_pred) ** 0.5,
+            "mae": mean_absolute_error(y.iloc[test_idx], y_pred),
+            "n_test_rows": int(len(test_idx)),
+            "n_test_lipids": int(groups.iloc[test_idx].nunique()),
+        }
+
+
+    model = _make_pipeline()
 
 
     model.fit(
@@ -1334,7 +1373,9 @@ def train_correction_model_app():
         model,
         data,
         n_rows,
-        n_lipids
+        n_lipids,
+        metrics,
+        split_warning
     )
 
 
@@ -1470,29 +1511,48 @@ def train_tailing_model_app():
     )
 
 
-    model = Pipeline([
+    groups = data.loc[X.index, "InputSMILES"]
 
-        (
-            "imputer",
-            SimpleImputer(
-                strategy="median"
-            )
-        ),
 
-        (
-            "scaler",
-            StandardScaler()
-        ),
+    def _make_pipeline():
+        return Pipeline([
+            ("imputer", SimpleImputer(strategy="median")),
+            ("scaler", StandardScaler()),
+            (
+                "classifier",
+                LogisticRegression(max_iter=5000, class_weight="balanced", random_state=42),
+            ),
+        ])
 
-        (
-            "classifier",
-            LogisticRegression(
-                max_iter=5000,
-                class_weight="balanced",
-                random_state=42
-            )
-        ),
-    ])
+
+    # 회귀(correction) 쪽과 같은 이유로 그룹(지질) 단위 held-out 분리.
+    # 분류는 클래스별로도 검증 세트에 최소 인원이 있어야 지표가 의미
+    # 있으므로, 분리 후 양쪽 클래스가 모두 있는지 추가로 확인한다.
+    train_idx, test_idx, split_warning = _group_holdout_split(
+        len(X), groups.to_numpy(), min_test_groups=1
+    )
+
+    metrics = None
+    if len(test_idx) > 0 and y.iloc[test_idx].nunique() < 2:
+        split_warning = (
+            "검증 세트에 한쪽 class만 남아 held-out 검증을 신뢰할 수 없습니다."
+        )
+        test_idx = np.array([], dtype=int)
+
+    if len(test_idx) > 0:
+        eval_model = _make_pipeline()
+        eval_model.fit(X.iloc[train_idx], y.iloc[train_idx])
+        y_pred = eval_model.predict(X.iloc[test_idx])
+        metrics = {
+            "accuracy": accuracy_score(y.iloc[test_idx], y_pred),
+            "balanced_accuracy": balanced_accuracy_score(y.iloc[test_idx], y_pred),
+            "f1": f1_score(y.iloc[test_idx], y_pred, zero_division=0),
+            "n_test_rows": int(len(test_idx)),
+            "n_test_lipids": int(groups.iloc[test_idx].nunique()),
+        }
+
+
+    model = _make_pipeline()
 
 
     model.fit(
@@ -1540,7 +1600,9 @@ def train_tailing_model_app():
         n_rows,
         n_lipids,
         class0,
-        class1
+        class1,
+        metrics,
+        split_warning
     )
 
 
@@ -4147,7 +4209,9 @@ with tab_training:
                 model,
                 data,
                 n_rows,
-                n_lipids
+                n_lipids,
+                metrics,
+                split_warning
 
             ) = train_correction_model_app()
 
@@ -4167,10 +4231,25 @@ with tab_training:
             )
 
 
-            st.warning(
-                "ACTIVE BUT UNVALIDATED — "
-                "unseen lipid validation이 아직 필요합니다."
-            )
+            if metrics:
+                st.markdown("**Held-out 검증 (학습에 쓰지 않은 지질로 평가)**")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Held-out R²", f"{metrics['r2']:.4f}")
+                m2.metric("Held-out RMSE", f"{metrics['rmse']:.4f}")
+                m3.metric("Held-out MAE", f"{metrics['mae']:.4f}")
+                st.caption(
+                    f"검증에 쓴 지질 {metrics['n_test_lipids']}종, "
+                    f"{metrics['n_test_rows']}행 — 학습 데이터에는 포함되지 않았습니다."
+                )
+                st.info(
+                    "배포된 모델은 이 지표를 잰 뒤 전체 데이터로 다시 학습한 것입니다 "
+                    "(검증 세트만큼 데이터를 버리고 배포하지 않기 위함)."
+                )
+            else:
+                st.warning(
+                    "ACTIVE BUT UNVALIDATED — "
+                    f"{split_warning or 'unseen lipid validation이 아직 필요합니다.'}"
+                )
 
 
         except Exception as error:
@@ -4226,7 +4305,9 @@ with tab_training:
                 n_rows,
                 n_lipids,
                 class0,
-                class1
+                class1,
+                metrics,
+                split_warning
 
             ) = train_tailing_model_app()
 
@@ -4256,10 +4337,25 @@ with tab_training:
             )
 
 
-            st.warning(
-                "ACTIVE BUT UNVALIDATED — "
-                "unseen lipid validation이 아직 필요합니다."
-            )
+            if metrics:
+                st.markdown("**Held-out 검증 (학습에 쓰지 않은 지질로 평가)**")
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Held-out Accuracy", f"{metrics['accuracy']:.3f}")
+                m2.metric("Held-out Balanced Accuracy", f"{metrics['balanced_accuracy']:.3f}")
+                m3.metric("Held-out F1", f"{metrics['f1']:.3f}")
+                st.caption(
+                    f"검증에 쓴 지질 {metrics['n_test_lipids']}종, "
+                    f"{metrics['n_test_rows']}행 — 학습 데이터에는 포함되지 않았습니다."
+                )
+                st.info(
+                    "배포된 모델은 이 지표를 잰 뒤 전체 데이터로 다시 학습한 것입니다 "
+                    "(검증 세트만큼 데이터를 버리고 배포하지 않기 위함)."
+                )
+            else:
+                st.warning(
+                    "ACTIVE BUT UNVALIDATED — "
+                    f"{split_warning or 'unseen lipid validation이 아직 필요합니다.'}"
+                )
 
 
         except Exception as error:
