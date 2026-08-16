@@ -1,0 +1,17 @@
+{
+  "source_name": "LNPDB",
+  "source_url": "https://github.com/evancollins1/LNPDB",
+  "repo_file": "data/LNPDB_for_LiON/LNPDB.csv",
+  "license": "MIT (repository level, confirmed via GitHub API; paper-level data license NOT independently confirmed -- the Nature Communications article was behind an auth wall in the session that wrote this file)",
+  "license_verified_via": "GitHub REST API repo.license.spdx_id, fetched directly",
+  "paper_doi": "10.1038/s41467-026-68818-1",
+  "fetched_at": "2026-08-16",
+  "raw_file": "data/external/lnpdb/raw/LNPDB.csv",
+  "raw_file_size_bytes": 20118803,
+  "raw_file_md5": "b142748a57c534312719ed3f24e6723f",
+  "raw_row_count": 19797,
+  "normalized_valid_structure_rows": 19797,
+  "normalized_invalid_structure_rows": 0,
+  "normalized_unique_structures": 12837,
+  "normalization_version": "v1"
+}

@@ -1,0 +1,18 @@
+{
+  "source_name": "LNP Atlas",
+  "source_url": "https://zenodo.org/records/17243732",
+  "version_doi": "10.5281/zenodo.17243733",
+  "concept_doi": "10.5281/zenodo.17243732",
+  "license": "CC-BY-4.0",
+  "license_verified_via": "Zenodo API record (license.id field), fetched directly",
+  "paper_doi": "10.1038/s41597-025-06456-w",
+  "fetched_at": "2026-08-16",
+  "raw_file": "data/external/lnp_atlas/raw/LNP_Atlas_DB_202509_v1.csv",
+  "raw_file_size_bytes": 1785032,
+  "raw_file_md5": "f77ec01fe88e16f558c09c41bcc10610",
+  "raw_row_count": 1092,
+  "normalized_valid_structure_rows": 934,
+  "normalized_invalid_structure_rows": 6,
+  "normalized_unique_structures": 259,
+  "normalization_version": "v1"
+}

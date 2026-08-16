@@ -40,6 +40,7 @@ from sklearn.metrics import (
 from validation import group_holdout_split as _group_holdout_split
 from mobile_phase import normalize_mobile_phase, mobile_phase_text
 from experiment_row import create_experiment_row
+from lnp_structural_domain import assess_structural_domain, SOURCES as LNP_STRUCTURAL_SOURCES
 
 
 # ============================================================
@@ -2301,6 +2302,9 @@ with tab_analyze:
                 )
 
 
+            st.session_state["analyze_last_smiles"] = smiles
+
+
         except Exception as error:
 
             st.error(
@@ -2310,6 +2314,93 @@ with tab_analyze:
             st.exception(
                 error
             )
+
+
+    st.divider()
+
+    st.subheader(
+        "🧬 LNP Structural Reference (실험적 참고용)"
+    )
+
+    st.caption(
+        "이 지질 구조가 공개 LNP 문헌 라이브러리(LNPDB, LNP Atlas)에서 얼마나 낯익은 "
+        "스캐폴드인지 보여주는 참고 정보입니다. 위 TLC Rf 예측의 Domain/Similarity와는 "
+        "완전히 다른 지표이며, 두 라이브러리 모두 TLC Rf나 solubility 측정값을 담고 있지 "
+        "않습니다 — 구조적으로 익숙하다고 해서 Rf 예측이 더 정확해지는 것은 아닙니다. "
+        "첫 조회는 참조 라이브러리를 불러오느라 몇 초 걸릴 수 있어, TLC 예측과 별개로 "
+        "버튼을 눌러야만 조회됩니다."
+    )
+
+    lookup_smiles = st.session_state.get(
+        "analyze_last_smiles",
+        smiles
+    )
+
+    if st.button(
+        "🧬 구조 참조 조회",
+        key="lnp_structural_lookup_button"
+    ):
+
+        for source_key, source_cfg in LNP_STRUCTURAL_SOURCES.items():
+
+            st.session_state[
+                f"lnp_domain_{source_key}"
+            ] = assess_structural_domain(
+                lookup_smiles,
+                source_key=source_key
+            )
+
+        st.session_state["lnp_domain_smiles"] = lookup_smiles
+
+
+    if st.session_state.get("lnp_domain_smiles"):
+
+        st.caption(
+            f"조회한 SMILES: {st.session_state['lnp_domain_smiles']}"
+        )
+
+        for source_key, source_cfg in LNP_STRUCTURAL_SOURCES.items():
+
+            domain = st.session_state.get(
+                f"lnp_domain_{source_key}"
+            )
+
+            if domain is None:
+                continue
+
+            st.write(f"**{source_cfg['display_name']}**")
+
+            if not domain.valid:
+                st.caption(domain.error or "평가할 수 없습니다.")
+                continue
+
+            dcol1, dcol2, dcol3 = st.columns(3)
+
+            dcol1.metric(
+                "가장 가까운 구조와의 유사도",
+                f"{domain.top_similarity:.3f}"
+            )
+
+            dcol2.metric(
+                "분류",
+                {
+                    "in_domain": "친숙함",
+                    "borderline": "경계",
+                    "novel": "낯섦",
+                }.get(domain.domain_category, domain.domain_category)
+            )
+
+            dcol3.metric(
+                "참조 구조 수",
+                domain.reference_size
+            )
+
+            if domain.nearest_neighbors:
+                nearest = domain.nearest_neighbors[0]
+                st.caption(
+                    f"가장 가까운 구조: {nearest.get('source_name') or '(이름 없음)'} "
+                    f"(유사도 {nearest['similarity']:.3f})"
+                )
 
 
 # ============================================================
