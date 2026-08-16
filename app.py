@@ -41,6 +41,8 @@ from validation import group_holdout_split as _group_holdout_split
 from mobile_phase import normalize_mobile_phase, mobile_phase_text
 from experiment_row import create_experiment_row
 from lnp_structural_domain import assess_structural_domain, SOURCES as LNP_STRUCTURAL_SOURCES
+import db_client
+from cloud_record_mapping import build_cloud_tlc_body
 
 
 # ============================================================
@@ -1806,6 +1808,73 @@ st.sidebar.caption(
 st.sidebar.divider()
 
 
+with st.sidebar.expander(
+    "☁️ 공유 데이터베이스 로그인 (선택)",
+    expanded=False
+):
+
+    st.caption(
+        "로그인하면 'Record Experiment'에서 저장한 실험이 이 컴퓨터의 로컬 파일뿐 아니라 "
+        "연구실 공유 데이터베이스(Lab Portal과 동일)에도 함께 저장됩니다. 로그인하지 않아도 "
+        "지금까지처럼 로컬 저장은 그대로 작동합니다."
+    )
+
+    if st.session_state.get("db_access_token"):
+
+        st.success(
+            f"로그인됨: {st.session_state.get('db_email', '')}"
+        )
+
+        if st.button(
+            "로그아웃",
+            key="db_logout_button"
+        ):
+            for _k in ("db_access_token", "db_email"):
+                st.session_state.pop(_k, None)
+            st.rerun()
+
+    else:
+
+        with st.form("db_login_form"):
+
+            db_login_email = st.text_input(
+                "이메일",
+                key="db_login_email"
+            )
+
+            db_login_password = st.text_input(
+                "비밀번호",
+                type="password",
+                key="db_login_password"
+            )
+
+            db_login_submitted = st.form_submit_button(
+                "로그인"
+            )
+
+        if db_login_submitted:
+
+            try:
+
+                _login_result = db_client.sign_in(
+                    db_login_email,
+                    db_login_password
+                )
+
+                st.session_state["db_access_token"] = _login_result["access_token"]
+                st.session_state["db_email"] = _login_result["user"]["email"]
+                st.rerun()
+
+            except db_client.ApiError as error:
+
+                st.error(
+                    f"로그인 실패: {db_client.friendly_error(error)}"
+                )
+
+
+st.sidebar.divider()
+
+
 st.sidebar.subheader(
     "💾 Project State"
 )
@@ -3305,7 +3374,7 @@ with tab_record:
 
 
             st.success(
-                "실제 TLC 실험이 저장되었습니다."
+                "실제 TLC 실험이 저장되었습니다. (로컬 파일)"
             )
 
 
@@ -3315,6 +3384,49 @@ with tab_record:
                     "ExperimentID"
                 ]
             )
+
+
+            if st.session_state.get("db_access_token"):
+
+                try:
+
+                    cloud_body = build_cloud_tlc_body(
+                        compound_name=name,
+                        smiles=record_smiles,
+                        mobile_phase=mobile_phase,
+                        plate=plate,
+                        development_distance_cm=development_distance,
+                        chamber_saturated=chamber_saturated,
+                        detection_method=detection,
+                        experimental_rf=experimental_rf,
+                        tailing_value=tailing,
+                        spot_quality_value=spot_quality,
+                        spotting_volume_ul=record_spotting,
+                        notes_text=notes,
+                    )
+
+                    cloud_result = db_client.call_function(
+                        "tlc-create",
+                        st.session_state["db_access_token"],
+                        cloud_body
+                    )
+
+                    st.success(
+                        f"공유 데이터베이스에도 저장되었습니다. (실행 번호: {cloud_result['analysis']['analysis_id']})"
+                    )
+
+                except db_client.ApiError as cloud_error:
+
+                    st.warning(
+                        f"로컬 저장은 완료됐지만, 공유 데이터베이스 저장에는 실패했습니다: "
+                        f"{db_client.friendly_error(cloud_error)}"
+                    )
+
+            else:
+
+                st.caption(
+                    "공유 데이터베이스에는 저장되지 않았습니다 (사이드바에서 로그인하면 함께 저장됩니다)."
+                )
 
 
         except Exception as error:
