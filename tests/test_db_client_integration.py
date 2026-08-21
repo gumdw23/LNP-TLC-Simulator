@@ -65,7 +65,7 @@ def test_a_mapped_tlc_body_is_accepted_by_the_real_tlc_create_function():
         notes_text="integration test run",
     )
 
-    result = db_client.call_function("tlc-create", token, body)
+    result = db_client.call_function("tlc", token, {**body, "action": "create"})
 
     assert result["analysis"]["analysis_id"].startswith("ANL-")
     assert result["analysis"]["analysis_type"] == "tlc"
@@ -77,10 +77,10 @@ def test_a_mapped_tlc_body_is_accepted_by_the_real_tlc_create_function():
     assert result["spots"][0]["rf_value"] == 0.42
     assert result["spots"][0]["spot_shape"] == "diffuse"
 
-    # Read it back through tlc-read too, the way the Lab Portal's own TLC
-    # screen would -- confirms the round trip, not just the write.
+    # Read it back through the read action too, the way the Lab Portal's own
+    # TLC screen would -- confirms the round trip, not just the write.
     read_back = db_client.call_function(
-        "tlc-read", token, {"analysis_id": result["analysis"]["analysis_id"]}
+        "tlc", token, {"action": "read", "analysis_id": result["analysis"]["analysis_id"]}
     )
     assert read_back["analysis"]["title"] == body["title"]
     assert "CCO" in read_back["analysis"]["notes"]
@@ -105,7 +105,7 @@ def test_a_blank_compound_name_still_records_under_the_unregistered_placeholder(
         notes_text="",
     )
 
-    result = db_client.call_function("tlc-create", token, body)
+    result = db_client.call_function("tlc", token, {**body, "action": "create"})
     assert result["analysis"]["sample_name"] == "미등록 지질"
 
 

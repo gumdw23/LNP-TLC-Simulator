@@ -3406,9 +3406,9 @@ with tab_record:
                     )
 
                     cloud_result = db_client.call_function(
-                        "tlc-create",
+                        "tlc",
                         st.session_state["db_access_token"],
-                        cloud_body
+                        {**cloud_body, "action": "create"}
                     )
 
                     st.success(
