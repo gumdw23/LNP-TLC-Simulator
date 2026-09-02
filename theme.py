@@ -140,5 +140,11 @@ code, .stCode, [data-testid="stMarkdownContainer"] code {{
 
 def inject_theme():
     """Load the shared fonts and component styling. Call once, near the
-    top of app.py, right after st.set_page_config()."""
-    st.markdown(_CSS, unsafe_allow_html=True)
+    top of app.py, right after st.set_page_config().
+
+    st.html(), not st.markdown(..., unsafe_allow_html=True): found live
+    2026-09-03 -- the CSS's own curly braces get caught by Streamlit's
+    markdown renderer, which printed the entire stylesheet as literal
+    on-page text instead of a <style> block. st.html() renders raw HTML
+    directly, no markdown parsing pass to collide with."""
+    st.html(_CSS)
