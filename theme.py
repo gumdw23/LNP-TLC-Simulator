@@ -74,7 +74,13 @@ h1, h2, h3, [data-testid="stMarkdownContainer"] h1,
     letter-spacing: -0.01em;
     color: var(--ink);
 }}
-[data-testid="stAppViewContainer"] {{ background: var(--canvas); }}
+/* Explicit text colour, not only background -- a dark-mode browser keeps
+Streamlit's own dark-mode text colour (near-white) by default; this
+project's own .streamlit/config.toml (base="light") is the primary fix,
+this is the second layer in case any element escapes that. */
+[data-testid="stAppViewContainer"], .stApp, body {{ background: var(--canvas) !important; color: var(--ink) !important; }}
+[data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li,
+[data-testid="stMarkdownContainer"] span, label, .stMarkdown, .stText {{ color: var(--ink) !important; }}
 [data-testid="stHeader"] {{ background: transparent; }}
 .stButton > button, .stFormSubmitButton > button, .stLinkButton > a {{
     border-radius: 8px !important;

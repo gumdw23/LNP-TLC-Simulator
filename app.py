@@ -2456,11 +2456,11 @@ with tab_analyze:
             )
 
             dcol2.metric(
-                "분류",
+                "Classification (분류)",
                 {
-                    "in_domain": "친숙함",
-                    "borderline": "경계",
-                    "novel": "낯섦",
+                    "in_domain": "In-domain (친숙함)",
+                    "borderline": "Borderline (경계)",
+                    "novel": "Novel (낯섦)",
                 }.get(domain.domain_category, domain.domain_category)
             )
 
