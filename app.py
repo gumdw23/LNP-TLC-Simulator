@@ -43,6 +43,7 @@ from experiment_row import create_experiment_row
 from lnp_structural_domain import assess_structural_domain, SOURCES as LNP_STRUCTURAL_SOURCES
 import db_client
 from cloud_record_mapping import build_cloud_tlc_body
+from theme import inject_theme
 
 
 # ============================================================
@@ -55,6 +56,10 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
 )
+# Shared with the LNP Lab Platform main Portal (theme.py's own docstring),
+# so this app and the Portal read as one product family. Owner-requested
+# sweeping UI update, 2026-09-03.
+inject_theme()
 
 
 # ============================================================
@@ -3372,6 +3377,11 @@ with tab_record:
 
             sync_engine_state()
 
+            # An immediate, snappy confirmation the click registered --
+            # the detailed st.success() below still explains WHAT was
+            # saved and gives the Experiment ID, but that only appears
+            # after the full rerun; this answers "did that work?" first.
+            st.toast("실험 저장됨", icon="✓")
 
             st.success(
                 "실제 TLC 실험이 저장되었습니다. (로컬 파일)"
