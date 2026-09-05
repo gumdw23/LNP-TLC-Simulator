@@ -4,15 +4,79 @@ on:
   push:
     branches:
       - lnp-v100-v3ux-qa-20260905
+    paths:
+      - '.lnp_qa_trigger.txt'
+      - '.github/workflows/lnp_v100_v3ux_windows_qa.yml'
 
 jobs:
-  windows-probe:
+  windows-native-qa:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
-      - name: Probe Windows runner
+
+      - name: Detect QA payload
+        id: payload
         shell: pwsh
         run: |
-          Write-Host "LNP QA Windows runner available"
-          python --version
-          Get-ComputerInfo | Select-Object WindowsProductName, WindowsVersion, OsArchitecture
+          if (Test-Path '.lnp_qa_payload/part_000.txt') {
+            'exists=true' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          } else {
+            Write-Host 'Payload not uploaded yet; workflow definition check only.'
+            'exists=false' | Out-File -FilePath $env:GITHUB_OUTPUT -Append -Encoding utf8
+          }
+
+      - uses: actions/setup-python@v5
+        if: steps.payload.outputs.exists == 'true'
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Reconstruct exact runtime tree
+        if: steps.payload.outputs.exists == 'true'
+        shell: pwsh
+        run: |
+          $parts = Get-ChildItem '.lnp_qa_payload/part_*.txt' | Sort-Object Name
+          if ($parts.Count -ne 68) { throw "Expected 68 payload chunks, found $($parts.Count)" }
+          $builder = New-Object System.Text.StringBuilder
+          foreach ($p in $parts) {
+            [void]$builder.Append((Get-Content $p.FullName -Raw).Trim())
+          }
+          $bytes = [Convert]::FromBase64String($builder.ToString())
+          [IO.File]::WriteAllBytes('lnp_v100_v3ux_exact_tree.tar.xz', $bytes)
+          $sha = (Get-FileHash 'lnp_v100_v3ux_exact_tree.tar.xz' -Algorithm SHA256).Hash.ToLower()
+          Write-Host "payload archive sha256=$sha"
+          if ($sha -ne 'dbf0e11e07c472c53b845072cc7e0c0811dcc3457b4655acee13da223fe33c23') {
+            throw "Payload archive SHA mismatch: $sha"
+          }
+          tar -xf 'lnp_v100_v3ux_exact_tree.tar.xz'
+
+      - name: Install pinned runtime dependencies
+        if: steps.payload.outputs.exists == 'true'
+        shell: pwsh
+        run: |
+          $root = 'LNP_Lipid_Library_Designer_V1.00_CLEAN_RUNTIME_CANDIDATE_V3UX_2026-09-05'
+          python -m pip install --upgrade pip
+          python -m pip install -r "$root/requirements.lock.txt"
+          python -m pip freeze | Out-File -FilePath 'windows_pip_freeze.txt' -Encoding utf8
+
+      - name: Run exact-package Windows native QA
+        if: steps.payload.outputs.exists == 'true'
+        shell: pwsh
+        env:
+          PYTHONUTF8: '1'
+        run: |
+          $root = 'LNP_Lipid_Library_Designer_V1.00_CLEAN_RUNTIME_CANDIDATE_V3UX_2026-09-05'
+          python '.lnp_qa/qa_windows.py' "$root"
+
+      - name: Upload QA evidence
+        if: always() && steps.payload.outputs.exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: LNP-V1.00-V3UX-Windows-QA
+          if-no-files-found: warn
+          path: |
+            windows_qa_report.json
+            windows_streamlit_server.log
+            windows_streamlit_server.err.log
+            windows_pip_freeze.txt
